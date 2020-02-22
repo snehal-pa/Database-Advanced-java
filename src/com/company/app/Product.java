@@ -10,6 +10,9 @@ public class Product implements Serializable {
     private String name;
     private float price;
 
+    public Product(){
+
+    }
 
     public Product(String name, float price) {
         this.modelNumber = 1000000000 +(long)(Math.random()*999999999);

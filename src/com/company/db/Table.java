@@ -18,10 +18,8 @@ public class Table {
 
     private Class klass;
 
-    String fileName;
-    //    String objectFileName;
-//    File objFile;
-    File file;
+    private String fileName;
+    private File file;
 
     public Table(Class klass) {
         this.klass = klass;
@@ -221,7 +219,7 @@ public class Table {
 
     }
 
-    public void update(String title, Object val1, Object torePlace){
+    public void update(String title, Object val1, Object toReplace) {
         System.out.println(writeTitles(fieldsName));
         //List<Object> found = new ArrayList<>();
         for (Object obj : data) {
@@ -230,9 +228,9 @@ public class Table {
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.getName().equalsIgnoreCase(title) && field.get(obj).toString().equalsIgnoreCase(val1.toString())) {
-                        field.set(obj, torePlace);
+                        field.set(obj, toReplace);
                         //found.add(obj);
-                        System.out.println(field.getName() + " = " +val1 + " is replaced by " + torePlace);
+                        System.out.println(field.getName() + " = " + val1 + " is updated " + toReplace);
                         System.out.println("\n updated----- " + writeRow(obj));
                         saveTable();
                     }
@@ -244,7 +242,7 @@ public class Table {
     }
 
     //overloaded
-    public void update(String title1, Object val1, String title2, Object torePlace){
+    public void update(String title1, Object val1, String title2, Object toReplace) {
         System.out.println("-----------------------------------------------------------------------------");
         for (Object obj : data) {
             try {
@@ -252,14 +250,18 @@ public class Table {
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.getName().equalsIgnoreCase(title1) && field.get(obj).toString().equalsIgnoreCase(val1.toString())) {
-                        for (Field f : fields){
-                            if(f.getName().equalsIgnoreCase(title2)){
+                        for (Field f : fields) {
+                            if (f.getName().equalsIgnoreCase(title2)) {
                                 f.setAccessible(true);
                                 Object oldValue = f.get(obj);
-                                f.set(obj,torePlace);
-                                System.out.println(f.getName() + " = " + oldValue + " is replaced by " + torePlace);
-                                System.out.println("\n updated----- " + writeRow(obj));
-                                saveTable();
+                                if (oldValue.toString().equalsIgnoreCase(toReplace.toString())) {
+                                    System.out.printf("\n%s = %s is already there", f.getName(), oldValue);
+                                } else {
+                                    f.set(obj, toReplace);
+                                    System.out.println(f.getName() + " = " + oldValue + " is updated to " + toReplace);
+                                    System.out.println("\n updated----- " + writeRow(obj));
+                                    saveTable();
+                                }
                             }
                         }
                     }
@@ -269,7 +271,6 @@ public class Table {
             }
         }
     }
-
 
 
 }

@@ -18,19 +18,15 @@ public class Program {
 
        //productTable.insert(new Product("Teddy Bear", 199.9f));
 
-        personTable.insert(new Person("Aarav","22","m"));
-
-
-
+        //personTable.insert(new Person("Arvi","20","f"));
 
 //        productTable.find("Name", "toy Horse");
-//        personTable.find("age", "30");
-//        productTable.find("price", 199.9);
-//
-       // personTable.removeData("gender", "f");
-        personTable.update("name", "sahana","Geet");
-        //personTable.update("personnumber", "1942339614", "name", "mani");
-//        personTable.removeData("personnumber", 1362476163);
+        personTable.find("age", "25" );
+
+        //personTable.update("name", "jash","riaan");
+        //personTable.update("personnumber", "1837944459", "name", "Jash");
+
+        //personTable.removeData("personnumber", "1677779320");
     }
 
 
