@@ -6,25 +6,26 @@ import com.company.db.Table;
 public class Program {
     Database db = new Database("webshop");
 
-    //Table productTable = new Table(Product.class);
+    Table productTable = new Table(Product.class);
     Table personTable = new Table(Person.class);
 
 
 
     public void run() {
         db.addTable(personTable);
-        //db.addTable(productTable);
+        db.addTable(productTable);
 
 
-       //productTable.insert(new Product("Teddy Bear", 199.9f));
+      productTable.insert(new Product(5, "Teddy-bear", 100.f));
 
-        //personTable.insert(new Person("Arvi","20","f"));
+      //  personTable.insert(new Person("vihaan",30,"m"));
+//        personTable.insert(new Person("Sara", 27,"f"));
 
 //        productTable.find("Name", "toy Horse");
-        personTable.find("age", "25" );
+     //   personTable.find("Name", "vihaan" );
 
         //personTable.update("name", "jash","riaan");
-        //personTable.update("personnumber", "1837944459", "name", "Jash");
+      //  personTable.update("personnumber", "1018550543", "name", "Rihaan");
 
         //personTable.removeData("personnumber", "1677779320");
     }

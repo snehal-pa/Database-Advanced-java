@@ -6,16 +6,19 @@ import java.io.Serializable;
 
 public class Person implements Serializable {
     @Unique
-    private String personnumber;
+    private long personnumber;
     private String name;
-    private String age;
+    @Positive
+    private int age;
     private String gender;
 
     public Person() {
     }
 
-    public Person(String name, String age, String gender)  {
-        personnumber = Long.toString(1000000000 +(long)(Math.random()*999999999));
+    public Person( String name, int age, String gender)  {
+        //this.personnumber = pn;
+        //personnumber = System.currentTimeMillis();
+        personnumber = 1000000000 +(long)(Math.random()*999999999);
         //Thread.sleep(200);
         this.name = name;
         this.age = age;

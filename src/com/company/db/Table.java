@@ -1,23 +1,19 @@
 package com.company.db;
 
+import com.company.app.Positive;
+
 import java.io.*;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-// Date = "2020-02-04"
 public class Table {
     private String name;
     private List<Object> data = new ArrayList<>();
     private List<String> fieldsName = new ArrayList<>();
 
     private Class klass;
-
     private String fileName;
     private File file;
 
@@ -26,25 +22,66 @@ public class Table {
         this.name = klass.getSimpleName();
         titles(klass.getDeclaredFields());
         fileName = "src\\tables\\ " + this.name + ".table";
-//        objectFileName = this.name + ".ser";
-//        objFile = new File(objectFileName);
         file = new File(fileName);
-
-//        if (!objFile.exists()) file.delete();
-        loadTable(klass);
+        loadTable();
 
     }
 
+    private boolean isUnique(Object obj, Field[] fields) {
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Unique unique = field.getAnnotation(Unique.class);
+            if (unique != null) {
+                for (Object o : this.data) {
+                    Field[] fieldsOfOtherObjects = fields;
+                    for (Field f : fieldsOfOtherObjects) {
+                        Unique unique1 = f.getAnnotation(Unique.class);
+                        if (unique1 != null) {
+                            try {
+                                if (f.get(o).toString().equals(field.get(obj).toString())) {
+                                    System.out.println(field.getName()+ " " + field.get(obj)+"  should be unique" );
+                                    return false;
+                                }
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     public boolean insert(Object obj) {
-        if (!data.contains(obj)) {
+        Field[] fields = klass.getDeclaredFields();
+        boolean valid = true;
+        for (Field f : fields) {
+            f.setAccessible(true);
+            Positive a = f.getAnnotation(Positive.class);
+            if (a != null) {
+                try {
+                    if (f.getDouble(obj) < 0.0) {
+                        Object oldValue = f.get(obj);
+                        valid = false;
+                        System.out.println(f.getName() + " can't be negative " + oldValue.toString());
+                    }
+                    //System.out.println("getdouble NOT < 0: " + f.getName() + " " + f.get(obj).toString());
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (isUnique(obj, fields) && valid) {
             data.add(obj);
             saveTable();
             return true;
         } else {
             return false;
         }
-
     }
+
 
     @Deprecated
     public boolean insert(DataRow dataRow) {
@@ -67,7 +104,7 @@ public class Table {
         return data.size();
     }
 
-    public void loadTable(Class klass) {
+    public void loadTable() {
         String fileName = "src\\tables\\ " + this.name + ".table";
         BufferedReader br;
         String line;
@@ -78,16 +115,22 @@ public class Table {
                 String titles = br.readLine();
                 while ((line = br.readLine()) != null) {
                     String[] loadedSplits = line.split(", ");
-                    //List<Object> objs = new ArrayList<>();
-                    //loadedPerson = klass.newInstance();
-                    Class[] args = new Class[fieldsName.size()];
                     loadedPerson = klass.getConstructor().newInstance();
                     for (int i = 0; i < fieldsName.size(); i++) {
                         try {
                             Field f = klass.getDeclaredField(fieldsName.get(i));
                             f.setAccessible(true);
-                            args[i] = f.getType();
-                            f.set(loadedPerson, loadedSplits[i]);
+                            if (f.getType() == Integer.TYPE) {
+                                f.set(loadedPerson, Integer.parseInt(loadedSplits[i]));
+                            } else if (f.getType() == Long.TYPE) {
+                                f.set(loadedPerson, Long.parseLong(loadedSplits[i]));
+                            } else if (f.getType() == Float.TYPE) {
+                                f.set(loadedPerson, Float.parseFloat(loadedSplits[i]));
+                            } else if (f.getType() == Double.TYPE) {
+                                f.set(loadedPerson, Double.parseDouble(loadedSplits[i]));
+                            } else
+                                f.set(loadedPerson, loadedSplits[i]);
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -112,7 +155,7 @@ public class Table {
     }
 
     private String writeRow(Object obj) {
-        Field[] fields = obj.getClass().getDeclaredFields();
+        Field[] fields = klass.getDeclaredFields();
 
         String result = "";
         for (int i = 0; i < fields.length; i++) {
@@ -126,7 +169,6 @@ public class Table {
         return result.substring(0, result.length() - 2);
     }
 
-    @SuppressWarnings("checked")
     public void saveTable() {
         PrintStream output = null;
         try {
@@ -144,8 +186,6 @@ public class Table {
                 output.close();
             }
         }
-
-
     }
 
 
@@ -180,9 +220,10 @@ public class Table {
         List<Object> found = new ArrayList<>();
         for (Object obj : data) {
             try {
-                Field[] fields = obj.getClass().getDeclaredFields();
+                Field[] fields = klass.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
+                    //if(field.getName().equalsIgnoreCase(title) && field.get(obj).toString().contains(val.toString())){
                     if (field.getName().equalsIgnoreCase(title) && field.get(obj).toString().equalsIgnoreCase(val.toString())) {
                         found.add(obj);
                         System.out.println(writeRow(obj));
@@ -224,7 +265,7 @@ public class Table {
         //List<Object> found = new ArrayList<>();
         for (Object obj : data) {
             try {
-                Field[] fields = obj.getClass().getDeclaredFields();
+                Field[] fields = klass.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.getName().equalsIgnoreCase(title) && field.get(obj).toString().equalsIgnoreCase(val1.toString())) {
@@ -246,7 +287,7 @@ public class Table {
         System.out.println("-----------------------------------------------------------------------------");
         for (Object obj : data) {
             try {
-                Field[] fields = obj.getClass().getDeclaredFields();
+                Field[] fields = klass.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.getName().equalsIgnoreCase(title1) && field.get(obj).toString().equalsIgnoreCase(val1.toString())) {
