@@ -15,21 +15,20 @@ public class Program {
         db.addTable(personTable);
         db.addTable(productTable);
 
-     //productTable.insert(new Product(33620925, "Toy horse", 499.9f));
-      //personTable.insert(new Person("Shan",30,"M"));
+     //productTable.insert(new Product(33620925, "Lego", 499.9f));
+     // personTable.insert(new Person("Shan",30,"M"));
 
 
-        //productTable.find("Name", "teddy-bear");
+        //productTable.find("Name", "barbie");
         //personTable.find("gender", "F" );
 
 
         //personTable.update("name", "jash","riaan");
-        //productTable.update("name","teddy-bear","Teddy bear");
-        personTable.update("personnumber", "1778189720", "age", 30);
+        //personTable.update("personnumber", "1778189720", "gender", "M");
 
 
-        //productTable.removeData("modelnumber", "32620915");
-        //personTable.removeData("personnumber", 1604727992);
+        //productTable.removeData("modelnumber", "33620915");
+        //personTable.removeData("personnumber", 1778189720);
     }
 
 

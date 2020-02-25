@@ -202,14 +202,15 @@ public class Table {
     public void removeData(String title, Object val) {
         System.out.println("---------------------------------------------------------------------------------");
         Object[] objs = data.toArray();
+        boolean found = false;
         for (int i = 0; i < objs.length; i++) {
             Field[] fields = objs[i].getClass().getDeclaredFields();
             for (Field field : fields) {
                 field.setAccessible(true);
                 try {
                     if (field.getName().equalsIgnoreCase(title) && field.get(objs[i]).toString().equalsIgnoreCase(val.toString())) {
-                        System.out.println("Removed from table-------: " + writeRow(objs[i]));
-
+                        System.out.println("Removed from " + this.name +" table-------: " + writeRow(objs[i]));
+                        found = true;
                         data.remove(objs[i]);
                         saveTable();
                     }
@@ -219,7 +220,7 @@ public class Table {
             }
 
         }
-
+        if(!found) System.out.println("No such data found to remove");
 
     }
 
@@ -249,6 +250,8 @@ public class Table {
 
     public void update(String title1, Object val1, String title2, Object toReplace) {
         System.out.println("-----------------------------------------------------------------------------");
+        boolean found = false;
+
         for (Object obj : data) {
             try {
                 Field[] fields = klass.getDeclaredFields();
@@ -257,13 +260,14 @@ public class Table {
                     if (field.getName().equalsIgnoreCase(title1) && field.get(obj).toString().equalsIgnoreCase(val1.toString())) {
                         for (Field f : fields) {
                             if (f.getName().equalsIgnoreCase(title2)) {
+                                found = true;
                                 f.setAccessible(true);
                                 Object oldValue = f.get(obj);
                                 if (oldValue.toString().equalsIgnoreCase(toReplace.toString())) {
                                     System.out.printf("\n%s is already %s", f.getName().toUpperCase(), oldValue);
                                 } else {
                                     f.set(obj, toReplace);
-                                    if(isPositive(obj) && isCorrectGenderName(obj)) {
+                                    if (isPositive(obj) && isCorrectGenderName(obj)) {
                                         System.out.println(f.getName().toUpperCase() + " = " + oldValue + " is updated to " + toReplace);
                                         System.out.println("\n updated----- " + writeRow(obj));
                                         saveTable();
@@ -277,6 +281,7 @@ public class Table {
                 e.printStackTrace();
             }
         }
+        if (!found) System.out.println("No match found, Check the column-name or value");
     }
 
     private boolean isValid(Object obj) {
