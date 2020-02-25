@@ -16,18 +16,21 @@ public class Program {
         db.addTable(productTable);
 
 
-      productTable.insert(new Product(5, "Teddy-bear", 100.f));
+     //productTable.insert(new Product(33620915, "Toy horse", 499.9f));
+      personTable.insert(new Person("Shan",28,"male"));
 
-      //  personTable.insert(new Person("vihaan",30,"m"));
-//        personTable.insert(new Person("Sara", 27,"f"));
 
-//        productTable.find("Name", "toy Horse");
-     //   personTable.find("Name", "vihaan" );
+        //productTable.find("Name", "teddy-bear");
+        //personTable.find("gender", "F" );
+
 
         //personTable.update("name", "jash","riaan");
-      //  personTable.update("personnumber", "1018550543", "name", "Rihaan");
+        //productTable.update("name","teddy-bear","Teddy bear");
+        //personTable.update("personnumber", "1759007534", "name", "shahi");
 
-        //personTable.removeData("personnumber", "1677779320");
+
+        //productTable.removeData("modelnumber", "32620915");
+        //personTable.removeData("personnumber", 1547498126);
     }
 
 

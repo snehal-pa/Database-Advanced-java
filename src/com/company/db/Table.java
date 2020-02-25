@@ -1,6 +1,8 @@
 package com.company.db;
 
+import com.company.app.Gender;
 import com.company.app.Positive;
+import com.company.app.Unique;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -27,53 +29,8 @@ public class Table {
 
     }
 
-    private boolean isUnique(Object obj, Field[] fields) {
-        for (Field field : fields) {
-            field.setAccessible(true);
-            Unique unique = field.getAnnotation(Unique.class);
-            if (unique != null) {
-                for (Object o : this.data) {
-                    Field[] fieldsOfOtherObjects = fields;
-                    for (Field f : fieldsOfOtherObjects) {
-                        Unique unique1 = f.getAnnotation(Unique.class);
-                        if (unique1 != null) {
-                            try {
-                                if (f.get(o).toString().equals(field.get(obj).toString())) {
-                                    System.out.println(field.getName()+ " " + field.get(obj)+"  should be unique" );
-                                    return false;
-                                }
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
     public boolean insert(Object obj) {
-        Field[] fields = klass.getDeclaredFields();
-        boolean valid = true;
-        for (Field f : fields) {
-            f.setAccessible(true);
-            Positive a = f.getAnnotation(Positive.class);
-            if (a != null) {
-                try {
-                    if (f.getDouble(obj) < 0.0) {
-                        Object oldValue = f.get(obj);
-                        valid = false;
-                        System.out.println(f.getName() + " can't be negative " + oldValue.toString());
-                    }
-                    //System.out.println("getdouble NOT < 0: " + f.getName() + " " + f.get(obj).toString());
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        if (isUnique(obj, fields) && valid) {
+        if (isValid(obj)) {
             data.add(obj);
             saveTable();
             return true;
@@ -84,10 +41,10 @@ public class Table {
 
 
     @Deprecated
-    public boolean insert(DataRow dataRow) {
-        if (!data.contains(dataRow) && dataRow.size() == fieldsName.size()) {
+    public boolean insert(Row row) {
+        if (!data.contains(row) && row.size() == fieldsName.size()) {
             // dataRow.setId(Id++);
-            data.add(dataRow);
+            data.add(row);
             //saveTable();
             return true;
         }
@@ -128,6 +85,8 @@ public class Table {
                                 f.set(loadedPerson, Float.parseFloat(loadedSplits[i]));
                             } else if (f.getType() == Double.TYPE) {
                                 f.set(loadedPerson, Double.parseDouble(loadedSplits[i]));
+                            } else if (f.getType() == Character.TYPE) {
+                                f.set(loadedPerson, loadedSplits[i].charAt(0));
                             } else
                                 f.set(loadedPerson, loadedSplits[i]);
 
@@ -233,6 +192,7 @@ public class Table {
                 e.printStackTrace();
             }
         }
+        if(found.size()==0) System.out.println("No match found");
         return found;
     }
 
@@ -283,6 +243,7 @@ public class Table {
     }
 
     //overloaded
+
     public void update(String title1, Object val1, String title2, Object toReplace) {
         System.out.println("-----------------------------------------------------------------------------");
         for (Object obj : data) {
@@ -313,7 +274,84 @@ public class Table {
         }
     }
 
+    private boolean isValid(Object obj) {
+        return isUnique(obj) && isPositive(obj) && isCorrectGenderName(obj);
+    }
 
+
+    private boolean isUnique(Object obj/*, Field[] fields*/) {
+        Field[] fields = klass.getDeclaredFields();
+
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Unique unique = field.getAnnotation(Unique.class);
+            if (unique != null) {
+                for (Object o : this.data) {
+                    Field[] fieldsOfOtherObjects = fields;
+                    for (Field f : fieldsOfOtherObjects) {
+                        Unique unique1 = f.getAnnotation(Unique.class);
+                        if (unique1 != null) {
+                            try {
+                                if (f.get(o).toString().equals(field.get(obj).toString())) {
+                                    System.out.println(field.getName() + " " + field.get(obj) + "  should be unique");
+                                    return false;
+                                }
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean isPositive(Object obj) {
+        Field[] fields = klass.getDeclaredFields();
+        boolean valid = true;
+        for (Field f : fields) {
+            f.setAccessible(true);
+            Positive a = f.getAnnotation(Positive.class);
+            if (a != null) {
+                try {
+                    if (f.getDouble(obj) < 0.0) {
+                        Object oldValue = f.get(obj);
+                        valid = false;
+                        System.out.println(f.getName() + " can't be negative " + oldValue.toString());
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return valid;
+
+    }
+
+    private boolean isCorrectGenderName(Object obj) {
+        Field[] fields = klass.getDeclaredFields();
+        for (Field f : fields) {
+            f.setAccessible(true);
+            Gender gender = f.getAnnotation(Gender.class);
+            if (gender != null) {
+                try {
+                        if (f.get(obj).toString().equalsIgnoreCase("f")
+                                || f.get(obj).toString().equalsIgnoreCase("m")
+                                || f.get(obj).toString().equalsIgnoreCase("o")) {
+                            return true;
+                        } else {
+                            System.out.println("type......\nm/M  for Male\nf/F  for Female\no/O  for Other ");
+                            return false;
+                        }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return true;
+    }
 }
 
 

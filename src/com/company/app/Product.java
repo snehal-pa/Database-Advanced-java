@@ -1,11 +1,10 @@
 package com.company.app;
 
-import com.company.db.Unique;
 
-import java.io.Serializable;
-
-public class Product implements Serializable {
-    @Unique private long modelNumber;
+public class Product {
+    @Unique
+    @Positive
+    private long modelNumber;
     private String name;
     @Positive
     private float price;
@@ -20,23 +19,6 @@ public class Product implements Serializable {
         this.name = name;
         this.price = price;
         this.modelNumber = modelNumber;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-
-    public float getPrice() {
-        return price;
-    }
-
-    public long getModelNumber() {
-        return modelNumber;
-    }
-    @Override
-    public String toString(){
-        return String.format("%s %f", this.name,this.price);
     }
 
 }
