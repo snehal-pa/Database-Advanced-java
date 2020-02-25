@@ -39,8 +39,11 @@ public class Table {
         }
     }
 
-
-    @Deprecated
+    /**
+     * This method uses the class Row that is no longer in use
+     *
+     * @Deprecated
+     */
     public boolean insert(Row row) {
         if (!data.contains(row) && row.size() == fieldsName.size()) {
             // dataRow.setId(Id++);
@@ -192,7 +195,7 @@ public class Table {
                 e.printStackTrace();
             }
         }
-        if(found.size()==0) System.out.println("No match found");
+        if (found.size() == 0) System.out.println("No match found");
         return found;
     }
 
@@ -257,12 +260,14 @@ public class Table {
                                 f.setAccessible(true);
                                 Object oldValue = f.get(obj);
                                 if (oldValue.toString().equalsIgnoreCase(toReplace.toString())) {
-                                    System.out.printf("\n%s = %s is already there", f.getName(), oldValue);
+                                    System.out.printf("\n%s is already %s", f.getName().toUpperCase(), oldValue);
                                 } else {
                                     f.set(obj, toReplace);
-                                    System.out.println(f.getName() + " = " + oldValue + " is updated to " + toReplace);
-                                    System.out.println("\n updated----- " + writeRow(obj));
-                                    saveTable();
+                                    if(isPositive(obj) && isCorrectGenderName(obj)) {
+                                        System.out.println(f.getName().toUpperCase() + " = " + oldValue + " is updated to " + toReplace);
+                                        System.out.println("\n updated----- " + writeRow(obj));
+                                        saveTable();
+                                    }
                                 }
                             }
                         }
@@ -337,14 +342,14 @@ public class Table {
             Gender gender = f.getAnnotation(Gender.class);
             if (gender != null) {
                 try {
-                        if (f.get(obj).toString().equalsIgnoreCase("f")
-                                || f.get(obj).toString().equalsIgnoreCase("m")
-                                || f.get(obj).toString().equalsIgnoreCase("o")) {
-                            return true;
-                        } else {
-                            System.out.println("type......\nm/M  for Male\nf/F  for Female\no/O  for Other ");
-                            return false;
-                        }
+                    if (f.get(obj).toString().equalsIgnoreCase("f")
+                            || f.get(obj).toString().equalsIgnoreCase("m")
+                            || f.get(obj).toString().equalsIgnoreCase("o")) {
+                        return true;
+                    } else {
+                        System.out.println("type......\nm/M  for Male\nf/F  for Female\no/O  for Other ");
+                        return false;
+                    }
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
                 }

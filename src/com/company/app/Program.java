@@ -15,9 +15,8 @@ public class Program {
         db.addTable(personTable);
         db.addTable(productTable);
 
-
-     //productTable.insert(new Product(33620915, "Toy horse", 499.9f));
-      personTable.insert(new Person("Shan",28,"male"));
+     //productTable.insert(new Product(33620925, "Toy horse", 499.9f));
+      //personTable.insert(new Person("Shan",30,"M"));
 
 
         //productTable.find("Name", "teddy-bear");
@@ -26,11 +25,11 @@ public class Program {
 
         //personTable.update("name", "jash","riaan");
         //productTable.update("name","teddy-bear","Teddy bear");
-        //personTable.update("personnumber", "1759007534", "name", "shahi");
+        personTable.update("personnumber", "1778189720", "age", 30);
 
 
         //productTable.removeData("modelnumber", "32620915");
-        //personTable.removeData("personnumber", 1547498126);
+        //personTable.removeData("personnumber", 1604727992);
     }
 
 
