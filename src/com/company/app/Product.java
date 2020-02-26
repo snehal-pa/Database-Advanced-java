@@ -3,7 +3,6 @@ package com.company.app;
 
 public class Product {
     @Unique
-    @Positive
     private long modelNumber;
     private String name;
     @Positive
