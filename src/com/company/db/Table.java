@@ -1,8 +1,8 @@
 package com.company.db;
 
-import com.company.app.Gender;
-import com.company.app.Positive;
-import com.company.app.Unique;
+import com.company.Annotations.Gender;
+import com.company.Annotations.Positive;
+import com.company.Annotations.Unique;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -37,21 +37,6 @@ public class Table {
         } else {
             return false;
         }
-    }
-
-    /**
-     * This method uses the class Row that is no longer in use
-     *
-     * @Deprecated
-     */
-    public boolean insert(Row row) {
-        if (!data.contains(row) && row.size() == fieldsName.size()) {
-            // dataRow.setId(Id++);
-            data.add(row);
-            //saveTable();
-            return true;
-        }
-        return false;
     }
 
     public void titles(Field[] fields) {
@@ -151,31 +136,6 @@ public class Table {
     }
 
 
-    public int numColumns() {
-        return fieldsName.size();
-    }
-
-    public String getColumnTitle(int k) {
-        return fieldsName.get(k);
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public Class getKlass() {
-        return klass;
-    }
-
-    public int findColNum(String name) {
-        for (int i = 0; i < fieldsName.size(); i++) {
-            if (fieldsName.get(i).equals(name)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public List<Object> find(String title, Object val) {
         System.out.println("----------------------------------------------------------------");
         System.out.println(writeTitles(fieldsName));
@@ -224,8 +184,9 @@ public class Table {
 
     }
 
-    public void update(String title, Object val1, Object toReplace) {
-        System.out.println(writeTitles(fieldsName));
+    public void update(String title, Object val1, Object replaceTo) {
+        System.out.println("\n-----------------------------------------------------------------------------");
+        //System.out.println(writeTitles(fieldsName));
         //List<Object> found = new ArrayList<>();
         for (Object obj : data) {
             try {
@@ -233,10 +194,10 @@ public class Table {
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.getName().equalsIgnoreCase(title) && field.get(obj).toString().equalsIgnoreCase(val1.toString())) {
-                        field.set(obj, toReplace);
+                        field.set(obj, replaceTo);
                         //found.add(obj);
-                        System.out.println(field.getName() + " = " + val1 + " is updated " + toReplace);
-                        System.out.println("\n updated----- " + writeRow(obj));
+                        System.out.println(field.getName() + " = " + val1 + " is updated " + replaceTo);
+                        System.out.println("\nupdated----- " + writeRow(obj));
                         saveTable();
                     }
                 }
@@ -246,10 +207,10 @@ public class Table {
         }
     }
 
-    //overloaded
 
-    public void update(String title1, Object val1, String title2, Object toReplace) {
-        System.out.println("-----------------------------------------------------------------------------");
+    //overloaded
+    public void update(String title1, Object val1, String title2, Object replaceTo) {
+        System.out.println("\n-----------------------------------------------------------------------------");
         boolean found = false;
 
         for (Object obj : data) {
@@ -263,12 +224,12 @@ public class Table {
                                 found = true;
                                 f.setAccessible(true);
                                 Object oldValue = f.get(obj);
-                                if (oldValue.toString().equalsIgnoreCase(toReplace.toString())) {
-                                    System.out.printf("\n%s is already %s", f.getName().toUpperCase(), oldValue);
+                                if (oldValue.toString().equalsIgnoreCase(replaceTo.toString())) {
+                                    System.out.printf("\n%s is already %s\n", f.getName().toUpperCase(), oldValue);
                                 } else {
-                                    f.set(obj, toReplace);
+                                    f.set(obj, replaceTo);
                                     if (isPositive(obj) && isCorrectGenderName(obj)) {
-                                        System.out.println(f.getName().toUpperCase() + " = " + oldValue + " is updated to " + toReplace);
+                                        System.out.println(f.getName().toUpperCase() + " = " + oldValue + " is updated to " + replaceTo);
                                         System.out.println("\n updated----- " + writeRow(obj));
                                         saveTable();
                                     }
@@ -361,6 +322,20 @@ public class Table {
             }
         }
         return true;
+    }
+
+    /**
+     * This method uses the class Row that is no longer in use
+     *
+     * @Deprecated
+     */
+    public boolean insert(Row row) {
+        if (!data.contains(row) && row.size() == fieldsName.size()) {
+            data.add(row);
+            //saveTable();
+            return true;
+        }
+        return false;
     }
 }
 

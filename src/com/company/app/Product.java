@@ -1,6 +1,9 @@
 package com.company.app;
 
 
+import com.company.Annotations.Positive;
+import com.company.Annotations.Unique;
+
 public class Product {
     @Unique
     private long modelNumber;

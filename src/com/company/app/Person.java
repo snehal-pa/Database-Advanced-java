@@ -1,5 +1,8 @@
 package com.company.app;
 
+import com.company.Annotations.Gender;
+import com.company.Annotations.Positive;
+import com.company.Annotations.Unique;
 
 public class Person {
     @Unique
