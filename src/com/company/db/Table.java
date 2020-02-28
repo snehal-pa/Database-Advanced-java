@@ -1,62 +1,42 @@
 package com.company.db;
 
+import com.company.Annotations.Gender;
+import com.company.Annotations.Positive;
+import com.company.Annotations.Unique;
+
 import java.io.*;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-// Date = "2020-02-04"
 public class Table {
     private String name;
     private List<Object> data = new ArrayList<>();
     private List<String> fieldsName = new ArrayList<>();
 
     private Class klass;
-
-    String fileName;
-    //    String objectFileName;
-//    File objFile;
-    File file;
+    private String fileName;
+    private File file;
 
     public Table(Class klass) {
         this.klass = klass;
         this.name = klass.getSimpleName();
         titles(klass.getDeclaredFields());
         fileName = "src\\tables\\ " + this.name + ".table";
-//        objectFileName = this.name + ".ser";
-//        objFile = new File(objectFileName);
         file = new File(fileName);
-
-//        if (!objFile.exists()) file.delete();
-        loadTable(klass);
+        loadTable();
 
     }
 
     public boolean insert(Object obj) {
-        if (!data.contains(obj)) {
+        if (isValid(obj)) {
             data.add(obj);
             saveTable();
             return true;
         } else {
             return false;
         }
-
-    }
-
-    @Deprecated
-    public boolean insert(DataRow dataRow) {
-        if (!data.contains(dataRow) && dataRow.size() == fieldsName.size()) {
-            // dataRow.setId(Id++);
-            data.add(dataRow);
-            //saveTable();
-            return true;
-        }
-        return false;
     }
 
     public void titles(Field[] fields) {
@@ -69,7 +49,7 @@ public class Table {
         return data.size();
     }
 
-    public void loadTable(Class klass) {
+    public void loadTable() {
         String fileName = "src\\tables\\ " + this.name + ".table";
         BufferedReader br;
         String line;
@@ -80,16 +60,24 @@ public class Table {
                 String titles = br.readLine();
                 while ((line = br.readLine()) != null) {
                     String[] loadedSplits = line.split(", ");
-                    //List<Object> objs = new ArrayList<>();
-                    //loadedPerson = klass.newInstance();
-                    Class[] args = new Class[fieldsName.size()];
                     loadedPerson = klass.getConstructor().newInstance();
                     for (int i = 0; i < fieldsName.size(); i++) {
                         try {
                             Field f = klass.getDeclaredField(fieldsName.get(i));
                             f.setAccessible(true);
-                            args[i] = f.getType();
-                            f.set(loadedPerson, loadedSplits[i]);
+                            if (f.getType() == Integer.TYPE) {
+                                f.set(loadedPerson, Integer.parseInt(loadedSplits[i]));
+                            } else if (f.getType() == Long.TYPE) {
+                                f.set(loadedPerson, Long.parseLong(loadedSplits[i]));
+                            } else if (f.getType() == Float.TYPE) {
+                                f.set(loadedPerson, Float.parseFloat(loadedSplits[i]));
+                            } else if (f.getType() == Double.TYPE) {
+                                f.set(loadedPerson, Double.parseDouble(loadedSplits[i]));
+                            } else if (f.getType() == Character.TYPE) {
+                                f.set(loadedPerson, loadedSplits[i].charAt(0));
+                            } else
+                                f.set(loadedPerson, loadedSplits[i]);
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -114,7 +102,7 @@ public class Table {
     }
 
     private String writeRow(Object obj) {
-        Field[] fields = obj.getClass().getDeclaredFields();
+        Field[] fields = klass.getDeclaredFields();
 
         String result = "";
         for (int i = 0; i < fields.length; i++) {
@@ -128,7 +116,6 @@ public class Table {
         return result.substring(0, result.length() - 2);
     }
 
-    @SuppressWarnings("checked")
     public void saveTable() {
         PrintStream output = null;
         try {
@@ -146,35 +133,8 @@ public class Table {
                 output.close();
             }
         }
-
-
     }
 
-
-    public int numColumns() {
-        return fieldsName.size();
-    }
-
-    public String getColumnTitle(int k) {
-        return fieldsName.get(k);
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public Class getKlass() {
-        return klass;
-    }
-
-    public int findColNum(String name) {
-        for (int i = 0; i < fieldsName.size(); i++) {
-            if (fieldsName.get(i).equals(name)) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
     public List<Object> find(String title, Object val) {
         System.out.println("----------------------------------------------------------------");
@@ -182,9 +142,10 @@ public class Table {
         List<Object> found = new ArrayList<>();
         for (Object obj : data) {
             try {
-                Field[] fields = obj.getClass().getDeclaredFields();
+                Field[] fields = klass.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
+                    //if(field.getName().equalsIgnoreCase(title) && field.get(obj).toString().contains(val.toString())){
                     if (field.getName().equalsIgnoreCase(title) && field.get(obj).toString().equalsIgnoreCase(val.toString())) {
                         found.add(obj);
                         System.out.println(writeRow(obj));
@@ -194,20 +155,22 @@ public class Table {
                 e.printStackTrace();
             }
         }
+        if (found.size() == 0) System.out.println("No match found");
         return found;
     }
 
     public void removeData(String title, Object val) {
         System.out.println("---------------------------------------------------------------------------------");
         Object[] objs = data.toArray();
+        boolean found = false;
         for (int i = 0; i < objs.length; i++) {
             Field[] fields = objs[i].getClass().getDeclaredFields();
             for (Field field : fields) {
                 field.setAccessible(true);
                 try {
                     if (field.getName().equalsIgnoreCase(title) && field.get(objs[i]).toString().equalsIgnoreCase(val.toString())) {
-                        System.out.println("Removed from table-------: " + writeRow(objs[i]));
-
+                        System.out.println("Removed from " + this.name +" table-------: " + writeRow(objs[i]));
+                        found = true;
                         data.remove(objs[i]);
                         saveTable();
                     }
@@ -217,23 +180,24 @@ public class Table {
             }
 
         }
-
+        if(!found) System.out.println("No such data found to remove");
 
     }
 
-    public void update(String title, Object val1, Object torePlace){
-        System.out.println(writeTitles(fieldsName));
+    public void update(String title, Object val1, Object replaceTo) {
+        System.out.println("\n-----------------------------------------------------------------------------");
+        //System.out.println(writeTitles(fieldsName));
         //List<Object> found = new ArrayList<>();
         for (Object obj : data) {
             try {
-                Field[] fields = obj.getClass().getDeclaredFields();
+                Field[] fields = klass.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.getName().equalsIgnoreCase(title) && field.get(obj).toString().equalsIgnoreCase(val1.toString())) {
-                        field.set(obj, torePlace);
+                        field.set(obj, replaceTo);
                         //found.add(obj);
-                        System.out.println(field.getName() + " = " +val1 + " is replaced by " + torePlace);
-                        System.out.println("\n updated----- " + writeRow(obj));
+                        System.out.println(field.getName() + " = " + val1 + " is updated " + replaceTo);
+                        System.out.println("\nupdated----- " + writeRow(obj));
                         saveTable();
                     }
                 }
@@ -243,23 +207,33 @@ public class Table {
         }
     }
 
+
     //overloaded
-    public void update(String title1, Object val1, String title2, Object torePlace){
-        System.out.println("-----------------------------------------------------------------------------");
+    public void update(String title1, Object val1, String title2, Object replaceTo) {
+        System.out.println("\n-----------------------------------------------------------------------------");
+        boolean found = false;
+
         for (Object obj : data) {
             try {
-                Field[] fields = obj.getClass().getDeclaredFields();
+                Field[] fields = klass.getDeclaredFields();
                 for (Field field : fields) {
                     field.setAccessible(true);
                     if (field.getName().equalsIgnoreCase(title1) && field.get(obj).toString().equalsIgnoreCase(val1.toString())) {
-                        for (Field f : fields){
-                            if(f.getName().equalsIgnoreCase(title2)){
+                        for (Field f : fields) {
+                            if (f.getName().equalsIgnoreCase(title2)) {
+                                found = true;
                                 f.setAccessible(true);
                                 Object oldValue = f.get(obj);
-                                f.set(obj,torePlace);
-                                System.out.println(f.getName() + " = " + oldValue + " is replaced by " + torePlace);
-                                System.out.println("\n updated----- " + writeRow(obj));
-                                saveTable();
+                                if (oldValue.toString().equalsIgnoreCase(replaceTo.toString())) {
+                                    System.out.printf("\n%s is already %s\n", f.getName().toUpperCase(), oldValue);
+                                } else {
+                                    f.set(obj, replaceTo);
+                                    if (isPositive(obj) && isCorrectGenderName(obj)) {
+                                        System.out.println(f.getName().toUpperCase() + " = " + oldValue + " is updated to " + replaceTo);
+                                        System.out.println("\n updated----- " + writeRow(obj));
+                                        saveTable();
+                                    }
+                                }
                             }
                         }
                     }
@@ -268,10 +242,101 @@ public class Table {
                 e.printStackTrace();
             }
         }
+        if (!found) System.out.println("No match found, Check the column-name or value");
+    }
+
+    private boolean isValid(Object obj) {
+        return isUnique(obj) && isPositive(obj) && isCorrectGenderName(obj);
     }
 
 
+    private boolean isUnique(Object obj/*, Field[] fields*/) {
+        Field[] fields = klass.getDeclaredFields();
 
+        for (Field field : fields) {
+            field.setAccessible(true);
+            Unique unique = field.getAnnotation(Unique.class);
+            if (unique != null) {
+                for (Object o : this.data) {
+                    Field[] fieldsOfOtherObjects = fields;
+                    for (Field f : fieldsOfOtherObjects) {
+                        Unique unique1 = f.getAnnotation(Unique.class);
+                        if (unique1 != null) {
+                            try {
+                                if (f.get(o).toString().equals(field.get(obj).toString())) {
+                                    System.out.println(field.getName() + " " + field.get(obj) + "  should be unique");
+                                    return false;
+                                }
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private boolean isPositive(Object obj) {
+        Field[] fields = klass.getDeclaredFields();
+        boolean valid = true;
+        for (Field f : fields) {
+            f.setAccessible(true);
+            Positive a = f.getAnnotation(Positive.class);
+            if (a != null) {
+                try {
+                    if (f.getDouble(obj) < 0.0) {
+                        Object oldValue = f.get(obj);
+                        valid = false;
+                        System.out.println(f.getName() + " can't be negative " + oldValue.toString());
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return valid;
+
+    }
+
+    private boolean isCorrectGenderName(Object obj) {
+        Field[] fields = klass.getDeclaredFields();
+        for (Field f : fields) {
+            f.setAccessible(true);
+            Gender gender = f.getAnnotation(Gender.class);
+            if (gender != null) {
+                try {
+                    if (f.get(obj).toString().equalsIgnoreCase("f")
+                            || f.get(obj).toString().equalsIgnoreCase("m")
+                            || f.get(obj).toString().equalsIgnoreCase("o")) {
+                        return true;
+                    } else {
+                        System.out.println("type......\nm/M  for Male\nf/F  for Female\no/O  for Other ");
+                        return false;
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * This method uses the class Row that is no longer in use
+     *
+     * @Deprecated
+     */
+    public boolean insert(Row row) {
+        if (!data.contains(row) && row.size() == fieldsName.size()) {
+            data.add(row);
+            //saveTable();
+            return true;
+        }
+        return false;
+    }
 }
 
 

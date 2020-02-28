@@ -1,38 +1,26 @@
 package com.company.app;
 
-import com.company.db.Unique;
 
-import java.io.Serializable;
+import com.company.Annotations.Positive;
+import com.company.Annotations.Unique;
 
-public class Product implements Serializable {
+public class Product {
     @Unique
     private long modelNumber;
     private String name;
+    @Positive
     private float price;
 
+    public Product(){
 
-    public Product(String name, float price) {
-        this.modelNumber = 1000000000 +(long)(Math.random()*999999999);
+    }
+
+    public Product(long modelNumber, String name, float price) {
+        this.modelNumber = modelNumber;
+        //this.modelNumber = 1000000000 +(long)(Math.random()*999999999);
         this.name = name;
         this.price = price;
         this.modelNumber = modelNumber;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-
-    public float getPrice() {
-        return price;
-    }
-
-    public long getModelNumber() {
-        return modelNumber;
-    }
-    @Override
-    public String toString(){
-        return String.format("%s %f", this.name,this.price);
     }
 
 }

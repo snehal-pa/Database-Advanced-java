@@ -2,13 +2,13 @@ package com.company.db;
 
 import java.util.ArrayList;
 import java.util.List;
-
-public class DataRow {
+@Deprecated
+public class Row {
     private List<Object> data = new ArrayList<>();
 
     private int id;
 
-    public DataRow(Object... values) {
+    public Row(Object... values) {
         for (Object o : values) {
             data.add(o);
         }
